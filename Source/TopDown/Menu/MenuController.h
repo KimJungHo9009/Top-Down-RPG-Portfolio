@@ -14,4 +14,6 @@ class TOPDOWN_API AMenuController : public APlayerController
 {
 	GENERATED_BODY()
 	
+public:
+	AMenuController();
 };

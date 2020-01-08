@@ -3,3 +3,6 @@
 
 #include "MenuController.h"
 
+AMenuController::AMenuController() {
+	bShowMouseCursor = true;
+}
