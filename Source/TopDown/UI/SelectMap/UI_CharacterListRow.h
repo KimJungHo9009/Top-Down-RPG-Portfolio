@@ -16,7 +16,7 @@ class TOPDOWN_API UUI_CharacterListRow : public UUserWidget
 	
 public:
 	UFUNCTION()
-	void SetText();
+	void SetText(FString _CharName, FString _Level, FString _Class, int32 _UserIndex);
 	
 public:
 	UPROPERTY(meta = (BindWidget))
@@ -24,4 +24,10 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* CharacterInfo;
+
+	UPROPERTY(meta = (BindWidget))
+	class UButton* CharacterButton;
+
+	UPROPERTY()
+	int32 Index;
 };

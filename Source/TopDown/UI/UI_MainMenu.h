@@ -15,7 +15,7 @@ class TOPDOWN_API UUI_MainMenu : public UUserWidget
 	GENERATED_BODY()
 	
 public :
-	virtual bool Initialize();
+	virtual bool Initialize() override;
 
 	UFUNCTION()
 	void GameStart();

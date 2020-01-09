@@ -13,7 +13,30 @@ UCLASS()
 class TOPDOWN_API UUI_SelectMapMenu : public UUserWidget
 {
 	GENERATED_BODY()
-	
+public:
+	virtual bool Initialize() override;
+
+	UFUNCTION()
+	void ShowCreateCharacter();
+
+	UFUNCTION()
+	void DeleteCharacter();
+
+	UFUNCTION()
+	void PressStart();
+
+	UFUNCTION()
+	void PressExit();
+
+	UFUNCTION()
+	void GetCharacterList();
+
+	UFUNCTION()
+	void PressDeleteAccept();
+
+	UFUNCTION()
+	void PressDeleteCancel();
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UVerticalBox* CharacterList;
@@ -32,4 +55,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UButton* Option;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UOverlay* DeleteCheck;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UButton* DeleteAccept;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UButton* DeleteCancel;
+
+private:
+	class AMenuGameMode* MenuGM;
 };

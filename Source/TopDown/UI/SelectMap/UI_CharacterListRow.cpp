@@ -5,6 +5,8 @@
 #include "Components/TextBlock.h"
 #include "Components/EditableText.h"
 
-void UUI_CharacterListRow::SetText() {
-	
+void UUI_CharacterListRow::SetText(FString _CharName, FString _Level, FString _Class, int32 _UserIndex) {
+	CharacterName->Text = FText::FromString(_CharName);
+	CharacterInfo->Text = FText::FromString("Lv." + _Level + "  " + _Class);
+	Index = _UserIndex;
 }

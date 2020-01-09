@@ -2,6 +2,7 @@
 
 
 #include "MenuController.h"
+#include "MenuGameMode.h"
 
 AMenuController::AMenuController() {
 	bShowMouseCursor = true;
