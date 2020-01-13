@@ -29,9 +29,6 @@ public:
 	void PressExit();
 
 	UFUNCTION()
-	void GetCharacterList();
-
-	UFUNCTION()
 	void PressDeleteAccept();
 
 	UFUNCTION()

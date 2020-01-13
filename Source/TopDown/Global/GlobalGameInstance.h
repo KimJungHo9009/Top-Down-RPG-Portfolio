@@ -15,5 +15,5 @@ class TOPDOWN_API UGlobalGameInstance : public UGameInstance
 	GENERATED_BODY()
 	
 public:
-	class UCharacterSaveData* CurrentSaveData;
+	class UCharacterSaveData* CurrentData;
 };

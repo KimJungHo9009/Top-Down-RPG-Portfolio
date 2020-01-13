@@ -17,6 +17,8 @@ class TOPDOWN_API UUI_CreateCharacter : public UUserWidget
 public:
 	virtual bool Initialize() override;
 
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
 	UFUNCTION()
 	void PressCreate();
 
@@ -32,9 +34,6 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UButton* CancelButton;
-
-	UPROPERTY()
-	FString CharClassName = "None";
 
 private:
 	class AMenuGameMode* MenuGM;

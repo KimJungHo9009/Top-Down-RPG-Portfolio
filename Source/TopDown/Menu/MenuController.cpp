@@ -6,4 +6,5 @@
 
 AMenuController::AMenuController() {
 	bShowMouseCursor = true;
+	bEnableClickEvents = true;
 }

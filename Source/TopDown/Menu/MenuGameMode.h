@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Global/Common.h"
 #include "GameFramework/GameModeBase.h"
 #include "MenuGameMode.generated.h"
 
 /**
- * 
- */
+ 메뉴 화면 관리하는 객체
+ 캐릭터 슬롯은 5개
+ **/
 UCLASS()
 class TOPDOWN_API AMenuGameMode : public AGameModeBase
 {
@@ -21,22 +23,33 @@ public:
 	void SetWidget();
 
 	UFUNCTION()
-	void CreateNewCharacter(FString _CharName, FString _CharClass);
+	void CreateNewCharacter(FString _CharName);
 
 	UFUNCTION()
-	void DeleteCharacter(UCharacterSaveData* _DeleteChar);
+	void DeleteCharacter();
 
 	UFUNCTION()
-	void LoadCharacterList();
+	void LoadCharacterList(bool _Refresh);
 
+	UFUNCTION()
+	void SelectedChar();
+
+	UFUNCTION()
+	void SelectCharType(const CharacterType _Type);
+
+private:
 	int32 CheckEmptySlot();
 
 public:
 	TSubclassOf<class UUI_SelectMapMenu> SelectMapMenuClass;
 	TSubclassOf<class UUI_CreateCharacter> CreateCharClass;
 	TSubclassOf<class UUI_CharacterListRow> CharListClass;
-	TArray<class UCharacterSaveData*> CharacterListArr;
-	class UCharacterSaveData* ChooseChar;
+
+	TArray<class UUI_CharacterListRow*> CharRowArr;
+	TArray<class ACharacterDummy*> DummyArr;
+
+	class UUI_CharacterListRow* ChooseChar;
+	CharacterType CharType = CharacterType::None;
 
 private:
 	class UUserWidget* CurrentWidget;

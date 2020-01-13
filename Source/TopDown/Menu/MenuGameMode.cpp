@@ -5,11 +5,13 @@
 #include "MenuController.h"
 #include "MenuPawn.h"
 #include "Global/CharacterSaveData.h"
+#include "CharacterDummy.h"
 
 #include "UI/SelectMap/UI_SelectMapMenu.h"
 #include "UI/SelectMap/UI_CreateCharacter.h"
 #include "UI/SelectMap/UI_CharacterListRow.h"
 #include "components/VerticalBox.h"
+#include "Components/Button.h"
 
 #include "ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
@@ -52,72 +54,113 @@ void AMenuGameMode::SetWidget()
 				CreateUI = CreateWidget<UUI_CreateCharacter>(MenuPC, CreateCharClass);
 			}
 			CurrentWidget = CreateUI;
+			for (ACharacterDummy* var : DummyArr) {
+				var->ShowOutline(false);
+			}
+			CharType = CharacterType::None;
 		}
 		else if (CurrentWidget == CreateUI) {
 			PawnTemp->SetActorLocation(FVector(-760, 0, 165));
 			if (SelectUI == nullptr) {
 				SelectUI = CreateWidget<UUI_SelectMapMenu>(MenuPC, SelectMapMenuClass);
 			}
-			CurrentWidget = SelectUI;
-			LoadCharacterList();
+			CurrentWidget = SelectUI;			
 		}
 	}
 	else {
 		SelectUI = CreateWidget<UUI_SelectMapMenu>(MenuPC, SelectMapMenuClass);
 		CurrentWidget = SelectUI;
-		LoadCharacterList();
 	}
+	LoadCharacterList(true);
 	CurrentWidget->AddToViewport();
 }
 
-void AMenuGameMode::CreateNewCharacter(FString _CharName, FString _CharClass)
+void AMenuGameMode::CreateNewCharacter(FString _CharName)
 {
 	int Index = CheckEmptySlot();
 	if (Index != -1) {
 		UCharacterSaveData* SaveGameInstance = Cast<UCharacterSaveData>(UGameplayStatics::CreateSaveGameObject(UCharacterSaveData::StaticClass()));
 		SaveGameInstance->CharacterName = _CharName;
-		SaveGameInstance->CharacterClass = _CharClass;
-		SaveGameInstance->Level = 1;
+		SaveGameInstance->SetCharacterType(CharType);
+		SaveGameInstance->SetDefault();
 		SaveGameInstance->UserIndex = Index;
 		FString Path = "CharacterData" + FString::FromInt(Index);
 		SaveGameInstance->SaveSlotName = Path;
 		UGameplayStatics::SaveGameToSlot(SaveGameInstance, Path, Index);
 	}
 	SetWidget();
+	LoadCharacterList(true);
 }
 
-void AMenuGameMode::DeleteCharacter(UCharacterSaveData* _DeleteChar)
+void AMenuGameMode::DeleteCharacter()
 {
-	FString Path = "CharacterData" + FString::FromInt(_DeleteChar->UserIndex);
-	UGameplayStatics::DeleteGameInSlot(Path, _DeleteChar->UserIndex);
+	//FString Path = "CharacterData" + FString::FromInt(ChooseChar->UserIndex);
+	UGameplayStatics::DeleteGameInSlot(ChooseChar->CharacterData->SaveSlotName, ChooseChar->UserIndex);
+	ChooseChar->RemoveFromParent();
+	ChooseChar->Destruct();	
+	ChooseChar = nullptr;
+	LoadCharacterList(true);
 }
 
-void AMenuGameMode::LoadCharacterList()
+void AMenuGameMode::LoadCharacterList(bool _Refresh = false)
 {
-	CharacterListArr.Empty();
-	SelectUI->CharacterList->ClearChildren();
+	if (_Refresh) {
+		CharRowArr.Empty();
+		SelectUI->CharacterList->ClearChildren();
+	}	
 
 	for (int i = 0; i < 5; i++) {
 		FString Path = "CharacterData" + FString::FromInt(i);
 		if (UGameplayStatics::DoesSaveGameExist(Path, i)) {
 			UCharacterSaveData* SaveTemp = Cast<UCharacterSaveData>(UGameplayStatics::LoadGameFromSlot(Path, i));
-			CharacterListArr.Add(SaveTemp);
 
 			UUI_CharacterListRow* CharRow = CreateWidget<UUI_CharacterListRow>(SelectUI, CharListClass);
+			CharRow->CharacterData = SaveTemp;
 			CharRow->SetText(SaveTemp->CharacterName, FString::FromInt(SaveTemp->Level), 
-				SaveTemp->CharacterClass, SaveTemp->UserIndex);
+				SaveTemp->CharacterClassName, SaveTemp->UserIndex);
+			CharRowArr.Add(CharRow);
 
 			SelectUI->CharacterList->AddChildToVerticalBox(CharRow);
 		}
 	}
-	if (CharacterListArr.Num() > 0) {
-		ChooseChar = CharacterListArr[0];
-	}	
+	if (CharRowArr.Num() > 0) {
+		ChooseChar = CharRowArr[0];
+		CharRowArr[0]->ChangeStyle(true);
+		SelectUI->Delete->SetIsEnabled(true);
+	}
+	else {
+		SelectUI->Delete->SetIsEnabled(false);
+	}
+
+	if (CharRowArr.Num() >= 5) {
+		SelectUI->Create->SetIsEnabled(false);
+	}
+	else {
+		SelectUI->Create->SetIsEnabled(true);
+	}
+}
+
+void AMenuGameMode::SelectedChar()
+{
+	// 선택된 캐릭터 행 강조
+	for (auto var : CharRowArr) {
+		if (var != ChooseChar) {
+			var->ChangeStyle(false);
+		}
+	}
+	// 정보 읽어와서 화면에 캐릭터 외형 보여주기
+}
+
+void AMenuGameMode::SelectCharType(const CharacterType _Type)
+{
+	if (CurrentWidget == CreateUI) {
+		CharType = _Type;
+	}
 }
 
 int32 AMenuGameMode::CheckEmptySlot()
 {
-	if (CharacterListArr.Num() > 0) {
+	if (CharRowArr.Num() > 0) {
 		for (int i = 0; i < 5; i++) {
 			FString Path = "CharacterData" + FString::FromInt(i);
 			if (!UGameplayStatics::DoesSaveGameExist(Path, i)) {

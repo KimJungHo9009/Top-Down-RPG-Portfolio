@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
+#include "Common.h"
 #include "CharacterSaveData.generated.h"
 
 /**
@@ -13,6 +14,13 @@ UCLASS()
 class TOPDOWN_API UCharacterSaveData : public USaveGame
 {
 	GENERATED_BODY()
+	
+public:
+	UFUNCTION()
+	void SetCharacterType(const CharacterType _Type);
+
+	UFUNCTION()
+	void SetDefault();
 	
 public :
 	UPROPERTY(VisibleAnywhere, Category = "Basics")
@@ -28,5 +36,12 @@ public :
 	int32 Level;
 
 	UPROPERTY(VisibleAnywhere, Category = "Infomation")
-	FString CharacterClass;
+	CharacterType CharacterClass;
+
+	UPROPERTY(VisibleAnywhere, Category = "Infomation")
+	FString CharacterClassName;
+
+	UPROPERTY(VisibleAnywhere, Category = "Infomation")
+	FStat BaseStat;
+
 };

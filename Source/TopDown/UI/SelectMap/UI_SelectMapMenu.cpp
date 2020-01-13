@@ -32,12 +32,19 @@ bool UUI_SelectMapMenu::Initialize() {
 
 void UUI_SelectMapMenu::ShowCreateCharacter()
 {
-	MenuGM->SetWidget();
+	if (MenuGM->CharRowArr.Num() < 5) {
+		MenuGM->SetWidget();
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Character Slot is Full"));
+	}
 }
 
 void UUI_SelectMapMenu::DeleteCharacter()
 {
-	DeleteCheck->SetVisibility(ESlateVisibility::Visible);
+	if (MenuGM->ChooseChar != nullptr) {
+		DeleteCheck->SetVisibility(ESlateVisibility::Visible);
+	}	
 }
 
 void UUI_SelectMapMenu::PressStart()
@@ -55,15 +62,9 @@ void UUI_SelectMapMenu::PressExit()
 	PlayerController->ConsoleCommand("quit");
 }
 
-void UUI_SelectMapMenu::GetCharacterList()
-{
-	
-}
-
 void UUI_SelectMapMenu::PressDeleteAccept()
 {
-	MenuGM->DeleteCharacter(MenuGM->ChooseChar);
-	MenuGM->LoadCharacterList();
+	MenuGM->DeleteCharacter();
 	PressDeleteCancel();
 }
 
