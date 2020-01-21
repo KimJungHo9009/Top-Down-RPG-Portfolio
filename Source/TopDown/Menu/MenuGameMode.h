@@ -32,10 +32,16 @@ public:
 	void LoadCharacterList(bool _Refresh);
 
 	UFUNCTION()
+	void LoadPreviewCharacter();
+
+	UFUNCTION()
 	void SelectedChar();
 
 	UFUNCTION()
 	void SelectCharType(const CharacterType _Type);
+
+	UFUNCTION()
+	void GameStart();
 
 private:
 	int32 CheckEmptySlot();
@@ -47,7 +53,7 @@ public:
 
 	TArray<class UUI_CharacterListRow*> CharRowArr;
 	TArray<class ACharacterDummy*> DummyArr;
-
+	TArray<class ACharacterPreview*> PreviewCharArr;
 	class UUI_CharacterListRow* ChooseChar;
 	CharacterType CharType = CharacterType::None;
 

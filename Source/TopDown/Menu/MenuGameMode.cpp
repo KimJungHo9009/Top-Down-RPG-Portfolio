@@ -5,7 +5,9 @@
 #include "MenuController.h"
 #include "MenuPawn.h"
 #include "Global/CharacterSaveData.h"
+#include "Global/GlobalGameInstance.h"
 #include "CharacterDummy.h"
+#include "CharacterPreview.h"
 
 #include "UI/SelectMap/UI_SelectMapMenu.h"
 #include "UI/SelectMap/UI_CreateCharacter.h"
@@ -32,6 +34,8 @@ AMenuGameMode::AMenuGameMode()
 	static ConstructorHelpers::FClassFinder<UUI_CharacterListRow> CharRowBPClass(TEXT("/Game/UI/SelectMap/WBP_UI_CharacterListRow"));
 	if (!ensure(CharRowBPClass.Class != nullptr)) return;
 	CharListClass = CharRowBPClass.Class;
+
+	PreviewCharArr.Init(nullptr, 5);
 }
 
 void AMenuGameMode::SetWidget()
@@ -96,6 +100,8 @@ void AMenuGameMode::DeleteCharacter()
 {
 	//FString Path = "CharacterData" + FString::FromInt(ChooseChar->UserIndex);
 	UGameplayStatics::DeleteGameInSlot(ChooseChar->CharacterData->SaveSlotName, ChooseChar->UserIndex);
+	PreviewCharArr[ChooseChar->UserIndex]->Destroy();
+	PreviewCharArr[ChooseChar->UserIndex] = nullptr;
 	ChooseChar->RemoveFromParent();
 	ChooseChar->Destruct();	
 	ChooseChar = nullptr;
@@ -107,7 +113,7 @@ void AMenuGameMode::LoadCharacterList(bool _Refresh = false)
 	if (_Refresh) {
 		CharRowArr.Empty();
 		SelectUI->CharacterList->ClearChildren();
-	}	
+	}
 
 	for (int i = 0; i < 5; i++) {
 		FString Path = "CharacterData" + FString::FromInt(i);
@@ -123,13 +129,17 @@ void AMenuGameMode::LoadCharacterList(bool _Refresh = false)
 			SelectUI->CharacterList->AddChildToVerticalBox(CharRow);
 		}
 	}
+
 	if (CharRowArr.Num() > 0) {
 		ChooseChar = CharRowArr[0];
 		CharRowArr[0]->ChangeStyle(true);
+		LoadPreviewCharacter();
+		SelectedChar();
 		SelectUI->Delete->SetIsEnabled(true);
 	}
 	else {
 		SelectUI->Delete->SetIsEnabled(false);
+		SelectUI->Start->SetIsEnabled(false);
 	}
 
 	if (CharRowArr.Num() >= 5) {
@@ -140,15 +150,40 @@ void AMenuGameMode::LoadCharacterList(bool _Refresh = false)
 	}
 }
 
+void AMenuGameMode::LoadPreviewCharacter()
+{
+	// 좌표 (X = -180.000000, Y = 40.000000, Z = 25.000000)
+	FTransform CharTransform;
+	CharTransform.SetLocation(FVector(-180, 40, 25));
+	CharTransform.SetScale3D(FVector(1.5));
+	CharTransform.SetRotation(FQuat(FRotator(0.f, 90.f, 0.f)));
+	
+	//UE_LOG(LogTemp, Error, TEXT("PreviewChar is null"));
+
+	for (int i = 0; i < CharRowArr.Num(); i++) {
+		int32 CharIndex = CharRowArr[i]->CharacterData->UserIndex;
+
+		if (PreviewCharArr[CharIndex] == nullptr) {
+			ACharacterPreview* PreviewChar = GetWorld()->SpawnActor<ACharacterPreview>(ACharacterPreview::StaticClass(), CharTransform);
+			PreviewChar->SetCharacter(CharRowArr[i]->CharacterData);
+			PreviewChar->SetActorHiddenInGame(true);
+			PreviewCharArr[CharIndex] = PreviewChar;
+		}		
+	}	
+}
+
 void AMenuGameMode::SelectedChar()
 {
-	// 선택된 캐릭터 행 강조
+	// 선택되지 않은 캐릭터 행 강조제거
 	for (auto var : CharRowArr) {
 		if (var != ChooseChar) {
 			var->ChangeStyle(false);
+			PreviewCharArr[var->CharacterData->UserIndex]->SetActorHiddenInGame(true);
 		}
 	}
+	
 	// 정보 읽어와서 화면에 캐릭터 외형 보여주기
+	PreviewCharArr[ChooseChar->CharacterData->UserIndex]->SetActorHiddenInGame(false);
 }
 
 void AMenuGameMode::SelectCharType(const CharacterType _Type)
@@ -156,6 +191,15 @@ void AMenuGameMode::SelectCharType(const CharacterType _Type)
 	if (CurrentWidget == CreateUI) {
 		CharType = _Type;
 	}
+}
+
+void AMenuGameMode::GameStart()
+{
+	if (ChooseChar == nullptr) return;
+
+	Cast<UGlobalGameInstance>(GetGameInstance())->CurrentData = ChooseChar->CharacterData;
+	
+	UGameplayStatics::OpenLevel(this, "PlayMap");
 }
 
 int32 AMenuGameMode::CheckEmptySlot()

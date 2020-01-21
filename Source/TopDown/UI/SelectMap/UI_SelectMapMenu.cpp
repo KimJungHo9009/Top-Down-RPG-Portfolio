@@ -49,6 +49,7 @@ void UUI_SelectMapMenu::DeleteCharacter()
 
 void UUI_SelectMapMenu::PressStart()
 {
+	MenuGM->GameStart();
 }
 
 void UUI_SelectMapMenu::PressExit()
